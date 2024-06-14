@@ -1,7 +1,10 @@
 
 const mongoose = require('mongoose')
+require('dotenv').config()
+const mongoLocalURL = 'mongodb://127.0.0.1:27017/leoDaDhaba'
+const mongoOnlineUrl = process.env.DB_URL
 
-const mongodbURL = mongoose.connect('mongodb://127.0.0.1:27017/leoDaDhaba')
+const mongodbURL = mongoose.connect(mongoOnlineUrl)
 
 const db = mongoose.connection;
 db.on('connected',()=>console.log('mongo is connected'))
