@@ -3,26 +3,21 @@
 const person = require('../person')
 const express = require('express');
 const route = express.Router()
+const  {jwtAuthMiddleware,generateToken} = require('../jwt')
 
 
 // person  
 route.post('/',async(req,res)=>{
 
     try {
-        // const {name,email,work} = req.body;
 
-// const newPerson = new person();
+        const data = req.body;
+        const newPerson = new person(data)
 
-// newPerson.name = name;
 
-// newPerson.email = email;
-// newPerson.work = work;
-
-const data = req.body;
-const newPerson = new person(data)
-
-await newPerson.save()
-res.send(newPerson)
+        const token = generateToken(newPerson.email)
+        await newPerson.save()
+        res.send(token)
         
     } catch (error) {
         
@@ -31,8 +26,31 @@ res.send(newPerson)
 
 
 })
+route.post('/login',async(req,res)=>{
+    let {username,password} = req.body;
 
-route.get('/',async(req,res)=>{
+    try {
+     const user = await person.findOne({username:username})
+
+
+   if(!user || (!await user.comparePassword(password) )) {
+    res.status(401).json({msg:"username or password invalid"})
+   }
+ 
+   const token = generateToken(user.email)
+
+   res.json({token})
+        
+    } catch (error) {
+        console.log(error)
+     throw error
+    }
+
+   
+
+})
+
+route.get('/',jwtAuthMiddleware,async(req,res)=>{
     let persons = await person.find();
     res.json({persons:persons})
 })
@@ -49,6 +67,23 @@ route.put('/:id',async(req,res)=>{
         
     } catch (error) {
         console.log(error)
+    }
+})
+
+route.get('/profile',jwtAuthMiddleware,async(req,res)=>{
+
+    let userData = req.user;
+    console.log(userData)
+
+    try {   
+        if(!userData){ res.json({msg:"Unauthorize"})}
+
+        let user = await person.findOne({email:userData})
+        res.json({user})
+        
+    } catch (error) {
+        console.log(error);
+        throw error
     }
 })
 route.delete('/:id',async(req,res)=>{

@@ -30,14 +30,13 @@ app.use(logData)
 app.use(passport.initialize())
 
 let LocalAuthMiddleware = passport.authenticate('local',{session:false})
-console.log( typeof LocalAuthMiddleware)
 
 app.get('/',(req,res)=>{
     res.send('Dhaba is on 24/7')
 })
 
 
-app.use('/person',LocalAuthMiddleware,personRouter)
+app.use('/person',personRouter)
 app.use('/menu',menuitemsRouter)
 
 
